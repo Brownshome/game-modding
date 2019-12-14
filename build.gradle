@@ -1,0 +1,46 @@
+plugins {
+	id 'java-library'
+	id 'maven-publish'
+	id 'com.zyxist.chainsaw' version '0.3.1'
+}
+
+javaModule.name = 'brownshome.modding'
+
+group = 'brownshome'
+version = 'alpha'
+
+repositories {
+	mavenCentral()
+}
+
+sourceSets {
+	main.java.srcDirs = ['src/main']
+	test.java.srcDirs = ['src/test']
+	test.resources.srcDirs = ['res/test']
+}
+
+task sourcesJar(type: Jar) {
+	from sourceSets.main.allJava
+	classifier = 'sources'
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			artifactId = 'modding'
+			from components.java
+			artifact sourcesJar
+		}
+	}
+}
+
+dependencies {
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+
+	testImplementation 'org.yaml:snakeyaml:1.25'
+}
+
+test {
+	useJUnitPlatform()
+}

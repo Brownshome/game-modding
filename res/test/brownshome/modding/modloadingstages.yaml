@@ -1,0 +1,33 @@
+baseMod:
+  start:
+    before:
+      - mod: parentMod
+        stage: start
+      - mod: libraryMod
+        stage: start
+  loadImages:
+    after:
+      - mod: baseMod
+        stage: start
+  finalizeLoading:
+    after:
+      - mod: parentMod
+        stage: loadImages
+      - mod: baseMod
+        stage: loadImages
+parentMod:
+  start:
+  loadImages:
+    after:
+      - mod: parentMod
+        stage: start
+  finalizeLoading:
+    after:
+      - mod: baseMod
+        stage: finalizeLoading
+libraryMod:
+  addCars:
+  start:
+      before:
+      - mod: libraryMod
+        stage: addCars

@@ -1,0 +1,40 @@
+baseMod:
+  1.0.0:
+    - mod: parentMod
+      version: 1.0.0
+      match: COMPATIBLE
+    - mod: libraryMod
+      version: 2.5.0
+      match: COMPATIBLE
+  1.1.0:
+    - mod: parentMod
+      version: 1.1.0
+      match: COMPATIBLE
+  1.2.0:
+    - mod: parentMod
+      version: 2.0.0
+      match: COMPATIBLE
+parentMod:
+  1.0.0:
+    - mod: libraryMod
+      version: 2.0.0
+      match: COMPATIBLE
+  1.0.1:
+    - mod: libraryMod
+      version: 2.7.16-alpha
+      match: EXACTLY
+  2.0.0:
+    - mod: libraryMod
+      version: 3.0.0
+      match: EXACTLY
+libraryMod:
+  0.0.0:
+  2.5.13:
+  2.7.14:
+  2.7.15+15:
+  2.7.16-alpha:
+  3.0.0:
+    - mod: subLibraryMod
+      version: 0.0.0
+      match: NEWER_OR_EQUAL
+  3.1.0:
