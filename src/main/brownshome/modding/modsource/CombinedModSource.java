@@ -5,6 +5,7 @@ import brownshome.modding.ModInfo;
 import brownshome.modding.modsource.ModSource;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A mod source that delegates to a list of other mod sources
@@ -37,6 +38,18 @@ final class CombinedModSource extends ModSource {
 	}
 
 	@Override
+	public void setParentLoader(ClassLoader delegate) {
+		for (var subSource : subSources) {
+			subSource.setParentLoader(delegate);
+		}
+	}
+
+	@Override
+	public ClassLoader classLoader(ModInfo info) {
+		return sourceMap.get(info.name()).get(info).classLoader(info);
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
 	public <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info) {
 		assert sourceMap.get(info.name()).get(info) != null;
@@ -44,5 +57,10 @@ final class CombinedModSource extends ModSource {
 		var source = sourceMap.get(info.name()).get(info);
 
 		return (MOD_CLASS) source.loadMod(info);
+	}
+
+	@Override
+	public String toString() {
+		return subSources.stream().map(Object::toString).collect(Collectors.joining(", ", "Combined [", "]"));
 	}
 }

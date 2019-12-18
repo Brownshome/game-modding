@@ -1,0 +1,43 @@
+apply plugin: 'application'
+
+allprojects {
+	apply plugin: 'com.zyxist.chainsaw'
+
+	repositories {
+		mavenCentral()
+		mavenLocal()
+	}
+
+	sourceSets {
+		main {
+			java.srcDirs = ['src']
+		}
+	}
+}
+
+subprojects {
+	apply plugin: 'java-library'
+
+	dependencies {
+		annotationProcessor project(':processor')
+
+		implementation project(':annotation')
+		implementation "brownshome:logging:alpha"
+	}
+}
+
+mainClassName = 'brownshome.modding.systemtest.Main'
+
+dependencies {
+	implementation rootProject
+	implementation "brownshome:logging:alpha"
+
+	subprojects.each { runtimeOnly it.configurations.runtimeElements }
+}
+
+// Include all of the mods
+processResources {
+	from(subprojects.collect { it.jar.outputs.files }) {
+		into "mods"
+	}
+}

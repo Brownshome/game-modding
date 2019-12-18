@@ -2,6 +2,7 @@ package brownshome.modding;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * This class is loaded prior to the main mod. Care must be taken to avoid any direct references to an classes that
@@ -45,5 +46,19 @@ public abstract class ModInfo {
 	@Override
 	public String toString() {
 		return String.format("%s@%s", name(), version());
+	}
+
+	@Override
+	public final boolean equals(Object o) {
+		if(this == o) return true;
+		if(!(o instanceof ModInfo)) return false;
+		ModInfo modInfo = (ModInfo) o;
+		return version.equals(modInfo.version) &&
+				name.equals(modInfo.name);
+	}
+
+	@Override
+	public final int hashCode() {
+		return Objects.hash(version, name);
 	}
 }

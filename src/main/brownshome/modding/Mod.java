@@ -1,8 +1,14 @@
 package brownshome.modding;
 
+import browngu.logging.Logger;
+import browngu.logging.Severity;
+import brownshome.modding.util.PredefinedLoadingStages;
+import brownshome.modding.util.StringLoadingStage;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 
 /**
  * An instance of this class represents a mod.
@@ -10,11 +16,16 @@ import java.util.concurrent.Callable;
 public abstract class Mod {
 	private final ModInfo info;
 
+	private final LoadingStage startStage;
+	private final LoadingStage endStage;
+
 	// Lazy
 	private ModLoader loader;
 
 	protected Mod(ModInfo info) {
 		this.info = info;
+		startStage = new LoadingStage(this, PredefinedLoadingStages.START, this::logStart);
+		endStage = new LoadingStage(this, PredefinedLoadingStages.END, this::logEnd);
 	}
 
 	/**
@@ -24,17 +35,31 @@ public abstract class Mod {
 	 * @return An object that can be used to configure the stages stage request.
 	 */
 	protected final LoadingStage createLoadingStageRequest(LoadingStageName name, Callable<Void> action) {
-		return new LoadingStage(this, name, action);
+		return new LoadingStage(this, name, action).after(startStage).before(endStage);
+	}
+
+	protected final LoadingStage createLoadingStageRequest(String name, Callable<Void> action) {
+		return createLoadingStageRequest(new StringLoadingStage(name), action);
+	}
+
+	protected final LoadingStage createLoadingStageRequest(LoadingStageName name, Runnable action) {
+		return createLoadingStageRequest(name, Executors.callable(action, null));
+	}
+
+	protected final LoadingStage createLoadingStageRequest(String name, Runnable action) {
+		return createLoadingStageRequest(new StringLoadingStage(name), Executors.callable(action, null));
 	}
 
 	/**
 	 * Forces a collection of requests to execute in their iteration order.
+	 *
+	 * @return the same collection
 	 */
-	protected final void fixExecutionOrder(Collection<LoadingStage> requests) {
+	protected final Collection<LoadingStage> fixExecutionOrder(Collection<LoadingStage> requests) {
 		Iterator<LoadingStage> it = requests.iterator();
 
 		if (!it.hasNext()) {
-			return;
+			return requests;
 		}
 
 		var previousRequest = it.next();
@@ -42,6 +67,8 @@ public abstract class Mod {
 		while (it.hasNext()) {
 			previousRequest.before(previousRequest = it.next());
 		}
+
+		return requests;
 	}
 
 	/**
@@ -49,7 +76,25 @@ public abstract class Mod {
 	 * @return a collection of stages stage requests. These requests may be executed in an order other than the iteration
 	 *         unless steps are taken to configure the order {@link #fixExecutionOrder}
 	 */
-	protected abstract Collection<LoadingStage> configureLoadingProcess();
+	protected abstract Collection<? extends LoadingStage> configureLoadingProcess();
+
+	final LoadingStage startStage() {
+		return startStage;
+	}
+
+	final LoadingStage endStage() {
+		return endStage;
+	}
+
+	private Void logEnd() {
+		Logger.logger().log(Severity.INFO, "Mod %s finished loading.", this);
+		return null;
+	}
+
+	private Void logStart() {
+		Logger.logger().log(Severity.INFO, "Mod %s started loading.", this);
+		return null;
+	}
 
 	/**
 	 * Gets a mod by name. This mod should be listed as a dependency of this mod if it is to be used in this method to
@@ -58,8 +103,8 @@ public abstract class Mod {
 	 * @param name the name of the requested mod
 	 * @param <MOD_TYPE> the expected type of the mod
 	 *
-	 * @throws IllegalArgumentException if the mod does not exist
-	 * @throws ClassCastException if the mod is not the expected class. This will never be thrown if MOD_TYPE = Mod.
+	 * @throws NullPointerException if the mod does not exist
+	 * @throws ClassCastException if the mod is not the expected class. This will never be thrown if {@link MOD_TYPE} is {@link Mod}.
 	 */
 	@SuppressWarnings("unchecked")
 	protected final <MOD_TYPE extends Mod> MOD_TYPE getNamedMod(String name) {
@@ -69,8 +114,6 @@ public abstract class Mod {
 	public ModInfo info() {
 		return info;
 	}
-
-	// MOD-LOADER ONLY CALLS.
 
 	/**
 	 * Called by the ModLoader to set itself as the loader of this mod once it has been constructed.

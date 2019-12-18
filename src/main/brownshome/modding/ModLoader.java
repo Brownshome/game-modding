@@ -36,7 +36,36 @@ public final class ModLoader {
 	private void solveDependencyGraph(Collection<ModDependency> rootRequirements) throws ModLoadingException {
 		VersionSelector selector = new VersionSelector(source, rootRequirements);
 
-		chosenMods = selector.selectModVersions().entrySet().stream().collect(Collectors.toMap(
+		var selectedModInfos = selector.selectModVersions();
+
+		var classLoaders = new ArrayList<ClassLoader>();
+
+		source.setParentLoader(new ClassLoader() {
+			Set<ClassLoader> calledBy = new HashSet<>();
+
+			@Override protected Class<?> findClass(String name) throws ClassNotFoundException {
+				for (var loader : classLoaders) {
+					if (calledBy.contains(loader))
+						continue;
+
+					calledBy.add(loader);
+
+					try {
+						return loader.loadClass(name);
+					} catch (ClassNotFoundException ignored) { } finally {
+						calledBy.remove(loader);
+					}
+				}
+
+				return super.findClass(name);
+			}
+		});
+
+		for (var info : selectedModInfos.values()) {
+			classLoaders.add(source.classLoader(info));
+		}
+
+		chosenMods = selectedModInfos.entrySet().stream().collect(Collectors.toMap(
 				Map.Entry::getKey,
 				e -> source.loadMod(e.getValue())));
 
@@ -51,6 +80,8 @@ public final class ModLoader {
 		// Configure all of the mods
 		for (var mod : chosenMods.values()) {
 			stages.addAll(mod.configureLoadingProcess());
+			stages.add(mod.startStage());
+			stages.add(mod.endStage());
 		}
 
 		for (var stage : stages) {
@@ -84,15 +115,9 @@ public final class ModLoader {
 	/**
 	 * Gets a named mod.
 	 *
-	 * @throws IllegalArgumentException if the named mod was not loaded.
+	 * @throws NullPointerException if the named mod was not loaded.
 	 */
 	Mod getNamedMod(String name) {
-		var mod = chosenMods.get(name);
-
-		if (mod == null) {
-			throw new IllegalArgumentException("Mod '" + name + "' was not found.");
-		}
-
-		return mod;
+		return chosenMods.get(name);
 	}
 }

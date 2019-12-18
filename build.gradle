@@ -1,7 +1,16 @@
 plugins {
 	id 'java-library'
 	id 'maven-publish'
-	id 'com.zyxist.chainsaw' version '0.3.1'
+	id 'com.zyxist.chainsaw' version '0.3.1' apply false
+}
+
+allprojects {
+	apply plugin: 'com.zyxist.chainsaw'
+
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
 }
 
 javaModule.name = 'brownshome.modding'
@@ -9,14 +18,25 @@ javaModule.name = 'brownshome.modding'
 group = 'brownshome'
 version = 'alpha'
 
-repositories {
-	mavenCentral()
+javaModule.extraTestModules = ['org.yaml.snakeyaml']
+
+javaModule.hacks {
+	opens('brownshome.modding', 'brownshome.modding', 'org.junit.platform.commons')
+	opens('brownshome.modding', 'brownshome.modding.dependencygraph', 'org.junit.platform.commons')
+	opens('brownshome.modding', 'brownshome.modding.util', 'org.junit.platform.commons')
 }
 
 sourceSets {
-	main.java.srcDirs = ['src/main']
-	test.java.srcDirs = ['src/test']
-	test.resources.srcDirs = ['res/test']
+	main {
+		java.srcDirs = ['src/main']
+		resources.srcDirs = ['res/main']
+	}
+	
+	test {
+		java.srcDirs = ['src/test']
+		resources.srcDirs = ['res/test']
+		output.resourcesDir = java.outputDir
+	}
 }
 
 task sourcesJar(type: Jar) {
@@ -35,6 +55,8 @@ publishing {
 }
 
 dependencies {
+	implementation "brownshome:logging:alpha";
+
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
 

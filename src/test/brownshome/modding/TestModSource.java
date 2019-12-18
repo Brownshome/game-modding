@@ -112,8 +112,13 @@ public class TestModSource extends ModSource {
 	}
 
 	@Override
+	public ClassLoader classLoader(ModInfo info) {
+		return ClassLoader.getPlatformClassLoader();
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
-	public <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info) {
+	public <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info, ClassLoader delegate) {
 		return (MOD_CLASS) new TestMod(info, loadMap.get(info.name()));
 	}
 
