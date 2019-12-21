@@ -21,7 +21,7 @@ subprojects {
 	dependencies {
 		annotationProcessor project(':processor')
 
-		implementation project(':annotation')
+		compileOnly project(':annotation')
 		implementation "brownshome:logging:alpha"
 	}
 }

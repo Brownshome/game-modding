@@ -4,6 +4,7 @@ import brownshome.modding.dependencygraph.VersionSelector;
 import brownshome.modding.modsource.ModSource;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -37,41 +38,33 @@ public final class ModLoader {
 		VersionSelector selector = new VersionSelector(source, rootRequirements);
 
 		var selectedModInfos = selector.selectModVersions();
+		chosenMods = new HashMap<String, Mod>();
 
-		var classLoaders = new ArrayList<ClassLoader>();
+		for (var modInfo : selectedModInfos.values()) {
+			loadMod(modInfo, selectedModInfos).loader(this);
+		}
+	}
 
-		source.setParentLoader(new ClassLoader() {
-			Set<ClassLoader> calledBy = new HashSet<>();
+	private Mod loadMod(ModInfo modInfo, Map<String, ModInfo> selectedModInfos) {
+		var mod = chosenMods.get(modInfo.name());
 
-			@Override protected Class<?> findClass(String name) throws ClassNotFoundException {
-				for (var loader : classLoaders) {
-					if (calledBy.contains(loader))
-						continue;
-
-					calledBy.add(loader);
-
-					try {
-						return loader.loadClass(name);
-					} catch (ClassNotFoundException ignored) { } finally {
-						calledBy.remove(loader);
-					}
-				}
-
-				return super.findClass(name);
-			}
-		});
-
-		for (var info : selectedModInfos.values()) {
-			classLoaders.add(source.classLoader(info));
+		if (mod != null) {
+			return mod;
 		}
 
-		chosenMods = selectedModInfos.entrySet().stream().collect(Collectors.toMap(
-				Map.Entry::getKey,
-				e -> source.loadMod(e.getValue())));
+		var parentLayers = new ArrayList<ModuleLayer>();
 
-		for (var mod : chosenMods.values()) {
-			mod.loader(this);
+		for (var modDependency : modInfo.dependencies()) {
+			var modName = modDependency.modName();
+			var depInfo = selectedModInfos.get(modName);
+			var depMod = loadMod(depInfo, selectedModInfos);
+			var layer = depMod.getClass().getModule().getLayer();
+			parentLayers.add(layer);
 		}
+
+		mod = source.loadMod(modInfo, parentLayers);
+		chosenMods.put(modInfo.name(), mod);
+		return mod;
 	}
 
 	private void initMods() throws ModLoadingException {

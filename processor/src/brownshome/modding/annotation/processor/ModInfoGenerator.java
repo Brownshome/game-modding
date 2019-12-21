@@ -48,7 +48,17 @@ public class ModInfoGenerator extends AbstractProcessor {
 		}
 
 		var className = originator.getSimpleName() + "Info";
-		var packageName = ((PackageElement) originator.getEnclosingElement()).getQualifiedName().toString();
+
+		var packageElement = (PackageElement) originator.getEnclosingElement();
+		var packageName = packageElement.getQualifiedName().toString();
+
+		var moduleElement = (ModuleElement) packageElement.getEnclosingElement();
+		if (moduleElement == null) {
+			processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@DefineMod cannot be used in a non-modular environment", originator);
+			return;
+		}
+		var moduleName = moduleElement.getQualifiedName().toString();
+
 		var requirements = definedModAnnotation.requirements();
 
 		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, String.format("Generating '%s.%s'", packageName, className));
@@ -71,8 +81,8 @@ public class ModInfoGenerator extends AbstractProcessor {
 
 		var infoConstructor = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC)
-				.addStatement("super($S, $T.createVersion($S), $N())",
-						definedModAnnotation.name(), SemanticModVersion.class, definedModAnnotation.version(), requirementsMethod)
+				.addStatement("super($S, $T.createVersion($S), $S, $N())",
+						definedModAnnotation.name(), SemanticModVersion.class, definedModAnnotation.version(), moduleName, requirementsMethod)
 				.build();
 
 		var infoClass = TypeSpec.classBuilder(className)

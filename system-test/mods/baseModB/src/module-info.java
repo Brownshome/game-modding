@@ -2,7 +2,11 @@ import brownshome.modding.*;
 import basemod.*;
 
 module basemod {
-	requires brownshome.modding.annotation;
+	exports basemod.api;
+
+	requires static brownshome.modding.annotation;
+
+	requires brownshome.modding;
 	requires browngu.logging;
 
 	provides Mod with BaseMod;

@@ -12,12 +12,13 @@ public abstract class ModInfo {
 	public final static Comparator<ModInfo> VERSION_COMPARATOR = Comparator.comparing(ModInfo::version);
 
 	private final ModVersion version;
-	private final String name;
+	private final String name, moduleName;
 	private final Collection<ModDependency> dependencies;
 
-	protected ModInfo(String name, ModVersion version, Collection<ModDependency> dependencies) {
+	protected ModInfo(String name, ModVersion version, String moduleName, Collection<ModDependency> dependencies) {
 		this.version = version;
 		this.name = name;
+		this.moduleName = moduleName;
 		this.dependencies = dependencies;
 	}
 
@@ -26,6 +27,13 @@ public abstract class ModInfo {
 	 */
 	public String name() {
 		return name;
+	}
+
+	/**
+	 * The module that this mod is a part of
+	 */
+	public String moduleName() {
+		return moduleName;
 	}
 
 	/**

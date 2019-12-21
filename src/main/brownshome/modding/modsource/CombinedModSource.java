@@ -2,7 +2,6 @@ package brownshome.modding.modsource;
 
 import brownshome.modding.Mod;
 import brownshome.modding.ModInfo;
-import brownshome.modding.modsource.ModSource;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,25 +37,13 @@ final class CombinedModSource extends ModSource {
 	}
 
 	@Override
-	public void setParentLoader(ClassLoader delegate) {
-		for (var subSource : subSources) {
-			subSource.setParentLoader(delegate);
-		}
-	}
-
-	@Override
-	public ClassLoader classLoader(ModInfo info) {
-		return sourceMap.get(info.name()).get(info).classLoader(info);
-	}
-
-	@Override
 	@SuppressWarnings("unchecked")
-	public <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info) {
+	public <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info, List<ModuleLayer> parentLayers) {
 		assert sourceMap.get(info.name()).get(info) != null;
 
 		var source = sourceMap.get(info.name()).get(info);
 
-		return (MOD_CLASS) source.loadMod(info);
+		return (MOD_CLASS) source.loadMod(info, parentLayers);
 	}
 
 	@Override

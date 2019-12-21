@@ -3,18 +3,21 @@ package brownshome.modding.modsource;
 import brownshome.modding.Mod;
 import brownshome.modding.ModInfo;
 
-import java.net.URL;
+import java.lang.module.ModuleFinder;
+import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Represents a source from which mods can be acquired.
  */
 public abstract class ModSource {
-	/**
-	 * Creates a mod source from a given classloader
-	 */
-	public static ModSource fromURL(URL url) {
-		return new URLModSource(url);
+	public static ModSource fromPaths(Path... paths) {
+		return fromPaths(List.of(paths));
+	}
+
+	public static ModSource fromPaths(Collection<Path> paths) {
+		return new PathsModSource(paths);
 	}
 
 	public static ModSource combine(Collection<ModSource> sources) {
@@ -22,22 +25,12 @@ public abstract class ModSource {
 	}
 
 	/**
-	 * Returns a list of modinfo objects that are accessible by this source.
+	 * Returns a list of ModInfo objects that are accessible by this source.
 	 */
 	public abstract Collection<ModInfo> availableMods(String modName);
 
 	/**
-	 * Sets the parent class loader that will be used if the main loader cannot find the classes.
-	 */
-	public abstract void setParentLoader(ClassLoader delegate);
-
-	/**
-	 * Returns a class loader that can be used to load classes associated with this mod.
-	 */
-	public abstract ClassLoader classLoader(ModInfo info);
-
-	/**
 	 * Loads a mod class by name and version
 	 **/
-	public abstract <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info);
+	public abstract <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info, List<ModuleLayer> parentLayers);
 }

@@ -7,7 +7,6 @@ import brownshome.modding.util.SemanticModVersion;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -112,13 +111,8 @@ public class TestModSource extends ModSource {
 	}
 
 	@Override
-	public ClassLoader classLoader(ModInfo info) {
-		return ClassLoader.getPlatformClassLoader();
-	}
-
-	@Override
 	@SuppressWarnings("unchecked")
-	public <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info, ClassLoader delegate) {
+	public <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info, List<ModuleLayer> parentLayers) {
 		return (MOD_CLASS) new TestMod(info, loadMap.get(info.name()));
 	}
 

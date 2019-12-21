@@ -4,7 +4,9 @@ import basemod.*;
 module basemod {
 	exports basemod.api;
 
-	requires brownshome.modding.annotation;
+	requires static brownshome.modding.annotation;
+
+	requires brownshome.modding;
 	requires browngu.logging;
 
 	provides Mod with BaseMod;

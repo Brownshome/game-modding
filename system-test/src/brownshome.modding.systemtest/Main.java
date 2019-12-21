@@ -10,6 +10,7 @@ import brownshome.modding.util.RuleModDependency;
 import brownshome.modding.util.SemanticModVersion;
 
 import java.io.IOException;
+import java.lang.module.ModuleFinder;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -31,13 +32,9 @@ public class Main {
 			throw new RuntimeException("This program must be run from a file system, not a JAR or network environment.");
 		}
 
-		var sources = Files.list(modFolder).map(f -> {
-			try {
-				return f.toUri().toURL();
-			} catch (MalformedURLException e) {
-				throw new RuntimeException(e);
-			}
-		}).map(ModSource::fromURL).collect(Collectors.toList());
+		var sources = Files.list(modFolder)
+				.map(ModSource::fromPaths)
+				.collect(Collectors.toList());
 
 		ModLoader modLoader = new ModLoader(ModSource.combine(sources));
 
