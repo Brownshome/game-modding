@@ -17,13 +17,13 @@ import javax.tools.JavaFileManager;
 import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class ModInfoGenerator extends AbstractProcessor {
+	private final Map<String, StringBuilder> pendingWrites = new HashMap<>();
+
 	public ModInfoGenerator() {  }
 
 	@Override
@@ -36,6 +36,11 @@ public class ModInfoGenerator extends AbstractProcessor {
 			}
 		} catch (Exception e) {
 			processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Unknown error occured: " + e);
+		}
+
+		if (roundEnv.processingOver()) {
+			// Flush writes to disk, as service files may be written to multiple times
+			flushWrites();
 		}
 
 		return false;
@@ -101,18 +106,24 @@ public class ModInfoGenerator extends AbstractProcessor {
 			return;
 		}
 
-		try (Writer writer = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/services/brownshome.modding.Mod", originator).openWriter()) {
-			writer.write(originator.getQualifiedName().toString());
-		} catch(IOException e) {
-			processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Unable to write Mod service data", originator);
-			return;
+		writeLine("META-INF/services/brownshome.modding.Mod", originator.getQualifiedName().toString());
+		writeLine("META-INF/services/brownshome.modding.ModInfo", packageName + "." + className);
+	}
+
+	private void writeLine(String file, String line) {
+		pendingWrites.computeIfAbsent(file, unused -> new StringBuilder()).append(line).append("\n");
+	}
+
+	private void flushWrites() {
+		for (var entry : pendingWrites.entrySet()) {
+			try (Writer writer = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", entry.getKey()).openWriter()) {
+				writer.write(entry.getValue().toString());
+			} catch(IOException e) {
+				processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Unable to write service data: " + e.getMessage());
+				return;
+			}
 		}
 
-		try (Writer writer = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/services/brownshome.modding.ModInfo", originator).openWriter()) {
-			writer.write(packageName + "." + className);
-		} catch(IOException e) {
-			processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Unable to write ModInfo service data", originator);
-			return;
-		}
+		pendingWrites.clear();
 	}
 }
