@@ -45,6 +45,11 @@ public abstract class ModSource {
 
 				return ModuleLayer.boot();
 			}
+
+			@Override
+			public String toString() {
+				return "Classpath";
+			}
 		};
 	}
 
