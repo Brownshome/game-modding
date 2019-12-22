@@ -1,3 +1,4 @@
+import basemod.api.ChildModProvider;
 import brownshome.modding.*;
 import childmod.*;
 
@@ -9,7 +10,6 @@ module childmod {
 	requires basemod;
 
 	provides Mod with ChildMod;
+	provides ChildModProvider with ChildMod;
 	provides ModInfo with ChildModInfo;
-
-	opens childmod to basemod;
 }

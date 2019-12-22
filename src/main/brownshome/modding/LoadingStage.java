@@ -147,6 +147,8 @@ public final class LoadingStage {
 	void execute() throws ModLoadingException {
 		assert numberOfParentsLeft == 0;
 
+		mod.signalIsLoading();
+
 		try {
 			action.call();
 		} catch(Exception e) {

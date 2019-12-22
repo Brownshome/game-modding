@@ -1,3 +1,4 @@
+import basemod.api.ChildModProvider;
 import brownshome.modding.*;
 import basemod.*;
 
@@ -11,4 +12,6 @@ module basemod {
 
 	provides Mod with BaseMod;
 	provides ModInfo with BaseModInfo;
+
+	uses ChildModProvider;
 }

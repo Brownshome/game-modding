@@ -39,11 +39,11 @@ class TestMod extends Mod {
 			});
 
 			for (var after : stage.after) {
-				request.after(getNamedMod(after.mod), new StringLoadingStage(after.stage));
+				request.after(namedMod(after.mod), new StringLoadingStage(after.stage));
 			}
 
 			for (var before : stage.before) {
-				request.before(getNamedMod(before.mod), new StringLoadingStage(before.stage));
+				request.before(namedMod(before.mod), new StringLoadingStage(before.stage));
 			}
 
 			return request;

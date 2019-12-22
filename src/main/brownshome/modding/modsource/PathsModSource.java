@@ -59,8 +59,7 @@ final class PathsModSource extends ModSource {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info, List<ModuleLayer> parents) {
+	public ModuleLayer loadLayer(ModInfo info, List<ModuleLayer> parents) {
 		// A new service loader and module layer is needed for each mod, as the parent module layers need to be reconfigured
 
 		parents = new ArrayList<>(parents);
@@ -70,15 +69,7 @@ final class PathsModSource extends ModSource {
 
 		var parentConfigurations = parents.stream().map(ModuleLayer::configuration).collect(Collectors.toList());
 		var configuration = Configuration.resolveAndBind(moduleFinder, parentConfigurations, ModuleFinder.of(), List.of(info.moduleName()));
-		var moduleLayer = ModuleLayer.defineModulesWithManyLoaders(configuration, parents, parentClassLoader).layer();
-
-		for (var mod : ServiceLoader.load(moduleLayer, Mod.class)) {
-			if (mod.info().name().equals(info.name())) {
-				return (MOD_CLASS) mod;
-			}
-		}
-
-		return null;
+		return ModuleLayer.defineModulesWithManyLoaders(configuration, parents, parentClassLoader).layer();
 	}
 
 	@Override

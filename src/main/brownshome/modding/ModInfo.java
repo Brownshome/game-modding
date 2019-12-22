@@ -37,6 +37,16 @@ public abstract class ModInfo {
 	}
 
 	/**
+	 * Whether this mod has a mod file that should be loaded. If this returns false, no mod file will be searched for
+	 * and the sources will only be loaded as a module into the module layer.
+	 *
+	 * @return true
+	 */
+	public boolean hasModFile() {
+		return true;
+	}
+
+	/**
 	 * The version of this mod.
 	 */
 	public final ModVersion version() {

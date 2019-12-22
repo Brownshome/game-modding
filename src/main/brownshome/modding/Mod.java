@@ -104,12 +104,30 @@ public abstract class Mod {
 	 * @param name the name of the requested mod
 	 * @param <MOD_TYPE> the expected type of the mod
 	 *
-	 * @throws NullPointerException if the mod does not exist
 	 * @throws ClassCastException if the mod is not the expected class. This will never be thrown if {@link MOD_TYPE} is {@link Mod}.
 	 */
 	@SuppressWarnings("unchecked")
-	protected final <MOD_TYPE extends Mod> MOD_TYPE getNamedMod(String name) {
-		return (MOD_TYPE) loader.getNamedMod(name);
+	protected final <MOD_TYPE extends Mod> MOD_TYPE namedMod(String name) {
+		return (MOD_TYPE) loader.namedMod(name);
+	}
+
+	/**
+	 * Gets a service loader that returns all service providers loaded currently. This loader will load from all classpath
+	 * sources and loaded mods.
+	 *
+	 * @param serviceClass the class to load services for
+	 * @param <TYPE> the type of the service provider
+	 * @return a service loader that will load from all mod and classpath sources.
+	 */
+	protected final <TYPE> ServiceLoader<TYPE> serviceLoader(Class<TYPE> serviceClass) {
+		return loader.serviceLoader(serviceClass);
+	}
+
+	/**
+	 * Returns the mod that is currently executing a loading stage
+	 */
+	protected final Mod currentlyLoadingMod() {
+		return loader.currentlyLoadingMod();
 	}
 
 	public ModInfo info() {
@@ -128,5 +146,9 @@ public abstract class Mod {
 	@Override
 	public String toString() {
 		return info().toString();
+	}
+
+	final void signalIsLoading() {
+		loader.signalIsLoading(this);
 	}
 }

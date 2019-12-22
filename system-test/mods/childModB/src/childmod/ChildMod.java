@@ -1,5 +1,6 @@
 package childmod;
 
+import basemod.api.ChildModProvider;
 import browngu.logging.Logger;
 import browngu.logging.Severity;
 import brownshome.modding.LoadingStage;
@@ -13,8 +14,14 @@ import java.util.List;
 		name = "childMod",
 		version = "1.0.0"
 )
-public class ChildMod extends Mod {
-	public ChildMod() {
+public class ChildMod extends Mod implements ChildModProvider {
+	private static final ChildMod INSTANCE = new ChildMod();
+
+	public static ChildMod provider() {
+		return INSTANCE;
+	}
+
+	private ChildMod() {
 		super(new ChildModInfo());
 	}
 

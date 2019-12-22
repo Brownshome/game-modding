@@ -5,6 +5,7 @@ import browngu.logging.Severity;
 import brownshome.modding.ModLoader;
 import brownshome.modding.ModLoadingException;
 import brownshome.modding.modsource.ModSource;
+import brownshome.modding.util.AnyMod;
 import brownshome.modding.util.DependencyRules;
 import brownshome.modding.util.RuleModDependency;
 import brownshome.modding.util.SemanticModVersion;
@@ -38,6 +39,9 @@ public class Main {
 
 		ModLoader modLoader = new ModLoader(ModSource.combine(sources));
 
-		modLoader.loadMods(List.of(new RuleModDependency("childMod", SemanticModVersion.createVersion("2.0.0"), DependencyRules.EXACTLY)));
+		modLoader.loadMods(List.of(
+				new RuleModDependency("childMod", SemanticModVersion.createVersion("2.0.0"), DependencyRules.EXACTLY),
+				new AnyMod("nosyMod")
+		));
 	}
 }

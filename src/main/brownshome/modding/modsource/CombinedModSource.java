@@ -37,13 +37,12 @@ final class CombinedModSource extends ModSource {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public <MOD_CLASS extends Mod> MOD_CLASS loadMod(ModInfo info, List<ModuleLayer> parentLayers) {
+	public ModuleLayer loadLayer(ModInfo info, List<ModuleLayer> parentLayers) {
 		assert sourceMap.get(info.name()).get(info) != null;
 
 		var source = sourceMap.get(info.name()).get(info);
 
-		return (MOD_CLASS) source.loadMod(info, parentLayers);
+		return source.loadLayer(info, parentLayers);
 	}
 
 	@Override

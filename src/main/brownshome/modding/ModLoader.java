@@ -3,8 +3,9 @@ package brownshome.modding;
 import brownshome.modding.dependencygraph.VersionSelector;
 import brownshome.modding.modsource.ModSource;
 
+import java.lang.module.Configuration;
+import java.lang.module.ModuleFinder;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -14,7 +15,13 @@ public final class ModLoader {
 	private final ModSource source;
 
 	// Local variables used for stages
-	private Map<String, Mod> chosenMods;
+	private Map<String, ModuleLayer> modLayers;
+	private Map<String, Mod> loadedMods;
+
+	private ModuleLayer childOfAllLayer;
+	private Map<Class<?>, ServiceLoader<?>> serviceLoaders;
+
+	private Mod currentlyLoadingMod = null;
 
 	/**
 	 * Creates a modloaded from a collection of sources
@@ -38,40 +45,65 @@ public final class ModLoader {
 		VersionSelector selector = new VersionSelector(source, rootRequirements);
 
 		var selectedModInfos = selector.selectModVersions();
-		chosenMods = new HashMap<String, Mod>();
+		var allLayers = new ArrayList<ModuleLayer>();
+
+		modLayers = new HashMap<>();
+		loadedMods = new HashMap<>();
 
 		for (var modInfo : selectedModInfos.values()) {
-			loadMod(modInfo, selectedModInfos).loader(this);
+			allLayers.add(loadMod(modInfo, selectedModInfos));
 		}
+
+		createChildLayer(allLayers);
 	}
 
-	private Mod loadMod(ModInfo modInfo, Map<String, ModInfo> selectedModInfos) {
-		var mod = chosenMods.get(modInfo.name());
+	private void createChildLayer(List<ModuleLayer> layers) {
+		var allConfigurations = layers.stream().map(ModuleLayer::configuration).collect(Collectors.toList());
+		var childOfAllConfig = Configuration.resolve(ModuleFinder.of(), allConfigurations, ModuleFinder.of(), Collections.emptyList());
+		childOfAllLayer = ModuleLayer.defineModulesWithOneLoader(childOfAllConfig, layers, ClassLoader.getSystemClassLoader()).layer();
+		serviceLoaders = new HashMap<>();
+	}
 
-		if (mod != null) {
-			return mod;
+	private ModuleLayer loadMod(ModInfo modInfo, Map<String, ModInfo> selectedModInfos) {
+		var layer = modLayers.get(modInfo.name());
+
+		if (layer != null) {
+			return layer;
 		}
 
 		var parentLayers = new ArrayList<ModuleLayer>();
 
-		for (var modDependency : modInfo.dependencies()) {
-			var modName = modDependency.modName();
-			var depInfo = selectedModInfos.get(modName);
-			var depMod = loadMod(depInfo, selectedModInfos);
-			var layer = depMod.getClass().getModule().getLayer();
-			parentLayers.add(layer);
+		for (var dep : modInfo.dependencies()) {
+			var depName = dep.modName();
+			var depInfo = selectedModInfos.get(depName);
+
+			var parentLayer = modLayers.get(depName);
+			if (parentLayer == null) {
+				parentLayer = loadMod(depInfo, selectedModInfos);
+			}
+
+			parentLayers.add(parentLayer);
 		}
 
-		mod = source.loadMod(modInfo, parentLayers);
-		chosenMods.put(modInfo.name(), mod);
-		return mod;
+		if (modInfo.hasModFile()) {
+			var mod = source.loadMod(modInfo, parentLayers);
+			mod.loader(this);
+			loadedMods.put(modInfo.name(), mod);
+			layer = mod.getClass().getModule().getLayer();
+		} else {
+			layer = source.loadLayer(modInfo, parentLayers);
+		}
+
+		modLayers.put(modInfo.name(), layer);
+
+		return layer;
 	}
 
 	private void initMods() throws ModLoadingException {
 		Collection<LoadingStage> stages = new ArrayList<>();
 
 		// Configure all of the mods
-		for (var mod : chosenMods.values()) {
+		for (var mod : loadedMods.values()) {
 			stages.addAll(mod.configureLoadingProcess());
 			stages.add(mod.startStage());
 			stages.add(mod.endStage());
@@ -108,9 +140,36 @@ public final class ModLoader {
 	/**
 	 * Gets a named mod.
 	 *
-	 * @throws NullPointerException if the named mod was not loaded.
+	 * @throws ClassCastException if the mod is not the expected class. This will never be thrown if {@link MOD_TYPE} is {@link Mod}.
 	 */
-	Mod getNamedMod(String name) {
-		return chosenMods.get(name);
+	@SuppressWarnings("unchecked")
+	public <MOD_TYPE extends Mod> MOD_TYPE namedMod(String name) {
+		return (MOD_TYPE) loadedMods.get(name);
+	}
+
+	Mod currentlyLoadingMod() {
+		return currentlyLoadingMod;
+	}
+
+	void signalIsLoading(Mod mod) {
+		currentlyLoadingMod = mod;
+	}
+
+	/**
+	 * Gets a service loader that returns all service providers loaded currently. This loader will load from all classpath
+	 * sources and loaded mods.
+	 *
+	 * @param serviceClass the class to load services for
+	 * @param <TYPE> the type of the service provider
+	 * @return a service loader that will load from all mod and classpath sources.
+	 */
+	@SuppressWarnings("unchecked")
+	<TYPE> ServiceLoader<TYPE> serviceLoader(Class<TYPE> serviceClass) {
+		return (ServiceLoader<TYPE>) serviceLoaders.computeIfAbsent(serviceClass, this::createServiceClass);
+	}
+
+	private <TYPE> ServiceLoader<TYPE> createServiceClass(Class<TYPE> serviceClass) {
+		ModLoader.class.getModule().addUses(serviceClass);
+		return ServiceLoader.load(childOfAllLayer, serviceClass);
 	}
 }

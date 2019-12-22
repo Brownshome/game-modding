@@ -1,6 +1,7 @@
 package childmod;
 
 import basemod.api.BaseModAPI;
+import basemod.api.ChildModProvider;
 import browngu.logging.Logger;
 import browngu.logging.Severity;
 import brownshome.modding.LoadingStage;
@@ -20,14 +21,20 @@ import java.util.List;
 				@Requirement(name = "baseMod", version = "1.0.0", rule = DependencyRules.NEWER_OR_EQUAL)
 		}
 )
-public class ChildMod extends Mod {
-	public ChildMod() {
+public class ChildMod extends Mod implements ChildModProvider {
+	private static final ChildMod INSTANCE = new ChildMod();
+
+	public static ChildMod provider() {
+		return INSTANCE;
+	}
+
+	private ChildMod() {
 		super(new ChildModInfo());
 	}
 
 	@Override
 	protected Collection<LoadingStage> configureLoadingProcess() {
-		Mod baseMod = getNamedMod("baseMod");
+		Mod baseMod = namedMod("baseMod");
 
 		return List.of(
 				createLoadingStageRequest("Log information", () -> {
