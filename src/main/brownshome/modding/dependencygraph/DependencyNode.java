@@ -289,6 +289,6 @@ final class DependencyNode {
 
 	@Override
 	public String toString() {
-		return name() + (chosenVersion == null ? "" : "@" + chosenVersion);
+		return modInfos.toString();
 	}
 }

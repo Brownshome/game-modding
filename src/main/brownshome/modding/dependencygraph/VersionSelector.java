@@ -74,7 +74,7 @@ public final class VersionSelector {
 								throw new IllegalStateException();
 							}));
 		} catch (UnsolvableModGraphException udge) {
-			throw new ModLoadingException(String.format("Unable to satisfy requirements %s with source '%s'.", externalRequirements, modSource), udge);
+			throw new ModLoadingException(String.format("Unable to satisfy requirements %s. Available mods: %s.", externalRequirements, nodeCache), udge);
 		}
 	}
 

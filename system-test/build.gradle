@@ -1,4 +1,7 @@
-apply plugin: 'application'
+plugins {
+	id 'application'
+	id 'brownshome.modding.modding-plugin'
+}
 
 allprojects {
 	apply plugin: 'com.zyxist.chainsaw'
@@ -23,7 +26,9 @@ subprojects {
 		annotationProcessor project(':processor')
 
 		compileOnly project(':annotation')
-		implementation "brownshome:logging:alpha"
+
+		// Set this to compile only, as it is loaded by the game
+		compileOnly "brownshome:logging:alpha"
 	}
 }
 
@@ -33,12 +38,7 @@ dependencies {
 	implementation rootProject
 	implementation "brownshome:logging:alpha"
 
-	subprojects.each { runtimeOnly it.configurations.runtimeElements }
-}
-
-// Include all of the mods
-processResources {
-	from(subprojects.collect { it.jar.outputs.files }) {
-		into "mods"
+	subprojects.each {
+		mod it
 	}
 }

@@ -6,3 +6,9 @@ file('system-test/mods').eachDir { dir ->
 	include ":system-test:${dir.name}"
 	project(":system-test:${dir.name}").projectDir = dir
 }
+
+includeBuild('gradle-plugin') {
+	dependencySubstitution {
+		substitute module('brownshome:modding-plugin:alpha') with project(':')
+	}
+}

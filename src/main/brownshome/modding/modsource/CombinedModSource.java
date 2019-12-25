@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * A mod source that delegates to a list of other mod sources
+ * A mod source that delegates to a list of other mod sources. Libraries will not be loaded across mod sources
  */
 final class CombinedModSource extends ModSource {
 	private final Collection<ModSource> subSources;

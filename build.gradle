@@ -1,3 +1,9 @@
+buildscript {
+	dependencies {
+		classpath 'brownshome:modding-plugin:alpha'
+	}
+}
+
 plugins {
 	id 'java-library'
 	id 'maven-publish'

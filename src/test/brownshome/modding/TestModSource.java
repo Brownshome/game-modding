@@ -116,4 +116,8 @@ public class TestModSource extends ModSource {
 		return (MOD_CLASS) new TestMod(info, loadMap.get(info.name()));
 	}
 
+	@Override
+	public ModuleLayer loadLayer(ModInfo modInfo, List<ModuleLayer> parentLayers) {
+		return ModuleLayer.boot();
+	}
 }
