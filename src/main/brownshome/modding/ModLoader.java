@@ -94,6 +94,11 @@ public final class ModLoader {
 			layer = source.loadLayer(modInfo, parentLayers);
 		}
 
+		if (layer == null) {
+			// We must be an unnamed module, use the boot layer as a parent
+			layer = ModuleLayer.boot();
+		}
+
 		modLayers.put(modInfo.name(), layer);
 
 		return layer;

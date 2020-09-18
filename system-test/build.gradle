@@ -3,12 +3,22 @@ plugins {
 	id 'brownshome.modding.modding-plugin'
 }
 
-allprojects {
-	apply plugin: 'com.zyxist.chainsaw'
+sourceSets {
+	main {
+		java.srcDirs = ['src']
+		resources.srcDirs = ['res']
+	}
+}
 
-	repositories {
-		mavenCentral()
-		mavenLocal()
+java {
+	modularity.inferModulePath = true
+}
+
+subprojects {
+	apply plugin: 'java-library'
+
+	java {
+		modularity.inferModulePath = true
 	}
 
 	sourceSets {
@@ -17,10 +27,6 @@ allprojects {
 			resources.srcDirs = ['res']
 		}
 	}
-}
-
-subprojects {
-	apply plugin: 'java-library'
 
 	dependencies {
 		annotationProcessor project(':processor')
@@ -28,15 +34,18 @@ subprojects {
 		compileOnly project(':annotation')
 
 		// Set this to compile only, as it is loaded by the game
-		compileOnly "brownshome:logging:alpha"
+		compileOnly "brownshome:logging:1.0.0"
 	}
 }
 
-mainClassName = 'brownshome.modding.systemtest.Main'
+application {
+	mainModule = 'brownshome.modding.systemtest'
+	mainClass = 'brownshome.modding.systemtest.Main'
+}
 
 dependencies {
 	implementation rootProject
-	implementation "brownshome:logging:alpha"
+	implementation "brownshome:logging:1.0.0"
 
 	subprojects.each {
 		mod it

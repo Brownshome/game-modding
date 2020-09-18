@@ -26,10 +26,9 @@ import java.util.stream.Collectors;
 
 public class Main {
 	public static void main(String... args) throws ModLoadingException, URISyntaxException, IOException {
-		Logger.logger.addLoggingOutput(System.out, Severity.DEBUG);
+		Logger.logger().addLoggingOutput(System.out, Severity.DEBUG);
 
-		var modURL = Main.class.getResource("/mods");
-		var modFolder = Paths.get(modURL.toURI());
+		var modFolder = Paths.get("build/mods");
 
 		ModLoader modLoader = new ModLoader(ModSource.fromFolder(modFolder));
 

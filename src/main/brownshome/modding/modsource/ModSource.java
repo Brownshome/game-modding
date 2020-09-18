@@ -68,7 +68,7 @@ public abstract class ModSource {
 	 * to any class on the list of paths.
 	 * <br>
 	 * The paths can be directories of classes or JAR files, but not directories of JAR files. In addition this method does
-	 * not support loading multiple classes with the same name. If that is required use {@link #fromFolder(Path)} or {@link #combine(Collection<ModSource>)}
+	 * not support loading multiple classes with the same name. If that is required use {@link #fromFolder(Path)} or {@link #combine(Collection)}
 	 */
 	public static ModSource fromPaths(Collection<Path> paths) {
 		return new PathsModSource(paths);

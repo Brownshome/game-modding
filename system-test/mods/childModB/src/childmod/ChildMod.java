@@ -29,7 +29,7 @@ public class ChildMod extends Mod implements ChildModProvider {
 	protected Collection<LoadingStage> configureLoadingProcess() {
 		return List.of(
 				createLoadingStageRequest("Log information", () -> {
-					Logger.logger.log(Severity.INFO, "%s initialized successfully", this);
+					Logger.logger().log(Severity.INFO, "%s initialized successfully", this);
 				})
 		);
 	}

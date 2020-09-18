@@ -38,7 +38,7 @@ public class ChildMod extends Mod implements ChildModProvider {
 
 		return List.of(
 				createLoadingStageRequest("Log information", () -> {
-					Logger.logger.log(Severity.INFO, "%s initialized successfully with %s as parent mod.", this, baseMod);
+					Logger.logger().log(Severity.INFO, "%s initialized successfully with %s as parent mod.", this, baseMod);
 
 					((BaseModAPI) baseMod).callAPI();
 				}).after(baseMod, PredefinedLoadingStages.END)

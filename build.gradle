@@ -7,29 +7,29 @@ buildscript {
 plugins {
 	id 'java-library'
 	id 'maven-publish'
-	id 'com.zyxist.chainsaw' version '0.3.1' apply false
+}
+
+group = 'brownshome'
+version = '0.1.0-SNAPSHOT'
+
+java {
+	modularity.inferModulePath = true
+	withSourcesJar()
+	withJavadocJar()
 }
 
 allprojects {
-	apply plugin: 'com.zyxist.chainsaw'
-
 	repositories {
-		mavenLocal()
-		mavenCentral()
+		maven {
+			url = 'https://maven.pkg.github.com/Brownshome/logging'
+			credentials {
+				username = project.properties['gpr.usr']
+				password = project.properties['gpr.key']
+			}
+		}
+
+		jcenter()
 	}
-}
-
-javaModule.name = 'brownshome.modding'
-
-group = 'brownshome'
-version = 'alpha'
-
-javaModule.extraTestModules = ['org.yaml.snakeyaml']
-
-javaModule.hacks {
-	opens('brownshome.modding', 'brownshome.modding', 'org.junit.platform.commons')
-	opens('brownshome.modding', 'brownshome.modding.dependencygraph', 'org.junit.platform.commons')
-	opens('brownshome.modding', 'brownshome.modding.util', 'org.junit.platform.commons')
 }
 
 sourceSets {
@@ -41,27 +41,48 @@ sourceSets {
 	test {
 		java.srcDirs = ['src/test']
 		resources.srcDirs = ['res/test']
-		output.resourcesDir = java.outputDir
 	}
 }
 
-task sourcesJar(type: Jar) {
-	from sourceSets.main.allJava
-	classifier = 'sources'
-}
-
 publishing {
+	repositories {
+		maven {
+			name = 'GitHubPackages'
+			url = uri('https://maven.pkg.github.com/Brownshome/game-modding')
+			credentials {
+				username = project.properties['gpr.usr']
+				password = project.properties['gpr.key']
+			}
+		}
+	}
+
 	publications {
 		mavenJava(MavenPublication) {
 			artifactId = 'modding'
 			from components.java
-			artifact sourcesJar
+
+			pom {
+				name = 'Modding Library'
+				description = 'A library for loading mod code at runtime with version resolution'
+				url = 'https://github.com/Brownshome/game-modding'
+				developers {
+					developer {
+						id = 'Brownshome'
+						name = 'James Brown'
+						email = 'jamesphone180@gmail.com'
+					}
+				}
+				scm {
+					connection = 'scm:git:git://github.com/Brownshome/game-modding.git'
+					url = 'https://github.com/Brownshome/game-modding'
+				}
+			}
 		}
 	}
 }
 
 dependencies {
-	implementation "brownshome:logging:alpha";
+	implementation "brownshome:logging:1.0.0";
 
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'

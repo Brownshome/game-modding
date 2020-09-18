@@ -11,7 +11,7 @@ class ModdingPlugin : Plugin<Project> {
 		}
 
 		target.afterEvaluate { proj ->
-			proj.tasks.named("processResources", Copy::class.java) { task ->
+			proj.tasks.create("collectMods", Copy::class.java) { task ->
 				proj.configurations.getByName("mod").resolvedConfiguration.firstLevelModuleDependencies.forEach { dep ->
 					val folderName = if (dep.moduleVersion.equals("unspecified")) {
 						dep.moduleName
@@ -19,12 +19,20 @@ class ModdingPlugin : Plugin<Project> {
 						"${dep.moduleName}-${dep.moduleVersion}"
 					}
 
+					task.into("${proj.buildDir}/mods")
+
 					task.from(dep.moduleArtifacts.map { it.file }) { copySpec ->
-						copySpec.into("mods/${folderName}")
+						copySpec.into(folderName)
 					}
 				}
 
 				task.dependsOn(proj.configurations.getByName("mod").buildDependencies)
+
+				if (proj.plugins.hasPlugin("application")) {
+					proj.tasks.getByName("run") { runTask ->
+						runTask.dependsOn(task)
+					}
+				}
 			}
 		}
 	}

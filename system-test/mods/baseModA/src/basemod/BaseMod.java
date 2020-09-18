@@ -23,7 +23,7 @@ public class BaseMod extends Mod implements BaseModAPI {
 	protected Collection<LoadingStage> configureLoadingProcess() {
 		return List.of(
 				createLoadingStageRequest("Log information", () -> {
-					Logger.logger.log(Severity.INFO, "%s initialized successfully", this);
+					Logger.logger().log(Severity.INFO, "%s initialized successfully", this);
 				}),
 
 				createLoadingStageRequest("Crash", () -> { throw new RuntimeException("Intentional crash"); })

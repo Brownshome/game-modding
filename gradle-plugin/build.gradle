@@ -1,20 +1,18 @@
 plugins {
+	id 'com.gradle.plugin-publish' version '0.12.0'
 	id 'java-gradle-plugin'
-	id 'maven-publish'
 	id 'org.jetbrains.kotlin.jvm' version '1.3.61'
 }
 
 repositories {
-	mavenLocal()
-	mavenCentral()
+	jcenter()
 }
 
 dependencies {
 	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
-group = 'brownshome'
-version = 'alpha'
+version = '0.2.0'
 
 gradlePlugin {
 	plugins {
@@ -25,11 +23,15 @@ gradlePlugin {
 	}
 }
 
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			artifactId = 'modding-plugin'
-			from components.kotlin
+pluginBundle {
+	website = 'https://github.com/Brownshome/game-modding'
+	vcsUrl = 'https://github.com/Brownshome/game-modding'
+	description = 'A gradle buildscript plugin for loading mods using brownshome:modding library'
+	tags = ['java', 'mod']
+
+	plugins {
+		moddingPlugin {
+			displayName = 'Modding Gradle Plugin'
 		}
 	}
 }
