@@ -2,7 +2,8 @@ package brownshome.modding.gradleplugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.Sync
+import org.slf4j.LoggerFactory
 
 class ModdingPlugin : Plugin<Project> {
 	override fun apply(target: Project) {
@@ -11,18 +12,21 @@ class ModdingPlugin : Plugin<Project> {
 		}
 
 		target.afterEvaluate { proj ->
-			proj.tasks.create("collectMods", Copy::class.java) { task ->
+			proj.tasks.create("collectMods", Sync::class.java) { task ->
+				task.into("${proj.buildDir}/mods")
+
 				proj.configurations.getByName("mod").resolvedConfiguration.firstLevelModuleDependencies.forEach { dep ->
-					val folderName = if (dep.moduleVersion.equals("unspecified")) {
+					val logger = LoggerFactory.getLogger(ModdingPlugin::class.java)
+					logger.info("Collecting: ${dep.moduleName}")
+
+					val folderName = if (dep.moduleVersion == "unspecified") {
 						dep.moduleName
 					} else {
 						"${dep.moduleName}-${dep.moduleVersion}"
 					}
 
-					task.into("${proj.buildDir}/mods")
-
-					task.from(dep.moduleArtifacts.map { it.file }) { copySpec ->
-						copySpec.into(folderName)
+					task.from(dep.moduleArtifacts.map { it.file }) {
+						it.into(folderName)
 					}
 				}
 
