@@ -26,7 +26,7 @@ public abstract class Mod {
 	protected Mod(ModInfo info) {
 		this.info = info;
 		startStage = new LoadingStage(this, PredefinedLoadingStages.START, this::logStart);
-		endStage = new LoadingStage(this, PredefinedLoadingStages.END, this::logEnd);
+		endStage = new LoadingStage(this, PredefinedLoadingStages.END, this::logEnd).after(startStage);
 	}
 
 	/**
