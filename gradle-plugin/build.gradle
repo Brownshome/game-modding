@@ -15,7 +15,7 @@ dependencies {
 }
 
 group = 'brownshome'
-version = '0.2.0'
+version = '0.3.0'
 
 gradlePlugin {
 	plugins {
@@ -47,5 +47,15 @@ java {
 publishing {
 	repositories {
 		mavenLocal()
+
+		maven {
+			name = 'GitHubPackages'
+			url = uri('https://maven.pkg.github.com/Brownshome/game-modding')
+			credentials {
+				println project.getProperties()
+				username = project.properties['gpr.usr']
+				password = project.properties['gpr.key']
+			}
+		}
 	}
 }

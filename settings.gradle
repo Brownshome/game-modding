@@ -1,6 +1,6 @@
 rootProject.name = 'game-modding'
 
-include 'annotation', 'processor', 'system-test'
+include 'annotation', 'processor', 'system-test', 'system-test:library'
 
 file('system-test/mods').eachDir { dir ->
 	include ":system-test:${dir.name}"

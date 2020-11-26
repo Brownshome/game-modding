@@ -34,7 +34,7 @@ subprojects {
 		compileOnly project(':annotation')
 
 		// Set this to compile only, as it is loaded by the game
-		compileOnly "brownshome:logging:1.0.0"
+		compileOnly 'brownshome:logging:1.0.0'
 	}
 }
 
@@ -45,9 +45,11 @@ application {
 
 dependencies {
 	implementation rootProject
-	implementation "brownshome:logging:1.0.0"
+	implementation 'brownshome:logging:1.0.0'
 
 	subprojects.each {
-		mod it
+		if (it.name != 'library') {
+			mod it
+		}
 	}
 }

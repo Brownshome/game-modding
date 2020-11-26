@@ -8,6 +8,7 @@ import brownshome.modding.LoadingStage;
 import brownshome.modding.Mod;
 import brownshome.modding.annotation.DefineMod;
 import brownshome.modding.annotation.Requirement;
+import brownshome.modding.systemtest.library.Library;
 import brownshome.modding.util.DependencyRules;
 import brownshome.modding.util.PredefinedLoadingStages;
 
@@ -41,6 +42,8 @@ public class ChildMod extends Mod implements ChildModProvider {
 					Logger.logger().log(Severity.INFO, "%s initialized successfully with %s as parent mod.", this, baseMod);
 
 					((BaseModAPI) baseMod).callAPI();
+
+					Library.libraryCall();
 				}).after(baseMod, PredefinedLoadingStages.END)
 		);
 	}
